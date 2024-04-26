@@ -1,0 +1,12 @@
+services: 
+  golang:
+    container_name: ${AUTHORIZATION_CONTAINER_HOST}
+    hostname: ${AUTHORIZATION_HOST}
+    tty: true
+    build:
+      context: .
+      dockerfile: ./docker/go/Dockerfile
+    volumes:
+      - ./src:/go/src/app
+    ports:
+      - 8084:8084
