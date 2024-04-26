@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"os"
 
+	"github.com/NenfuAT/24AuthorizationServer/controller"
+
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
@@ -28,6 +30,7 @@ func Init() {
 		c.String(http.StatusOK, "Hello World!!")
 	})
 
+	r.GET("/auth", controller.Auth)
 	// サーバの起動とエラーハンドリング
 	if err := r.Run("0.0.0.0:8084"); err != nil {
 		fmt.Println("サーバの起動に失敗しました:", err)
