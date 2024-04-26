@@ -4,3 +4,4 @@
 docker/postgres/data/
 #
 src/conf/environments/
+src/log
