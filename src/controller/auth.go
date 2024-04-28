@@ -1,9 +1,13 @@
 package controller
 
 import (
+	"crypto/sha256"
+	"encoding/base64"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/NenfuAT/24AuthorizationServer/model"
 
@@ -80,4 +84,175 @@ func Auth(c *gin.Context) {
 	}
 
 	log.Println("Returned login page...")
+}
+
+// Ginによるログイン認証
+func AuthCheck(c *gin.Context) {
+	loginUser := c.PostForm("username")
+	password := c.PostForm("password")
+
+	if loginUser != model.TestUser.Name || password != model.TestUser.Password {
+		c.String(http.StatusBadRequest, "login failed")
+		return
+	}
+
+	cookie, err := c.Cookie("session")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "authsession not found",
+		})
+		return
+	}
+
+	v, exists := model.SessionList[cookie]
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "invalid session",
+		})
+		return
+	}
+
+	// 認可コードの生成と保存
+	authCodeString := uuid.New().String()
+	authData := model.AuthCode{
+		User:        loginUser,
+		ClientId:    v.Client,
+		Scopes:      v.Scopes,
+		RedirectUri: v.RedirectUri,
+		ExpiresAt:   time.Now().Unix() + 300, // 5分後に有効期限が切れる
+	}
+
+	model.AuthCodeList[authCodeString] = authData
+
+	log.Printf("Auth code accepted: %s\n", authCodeString)
+
+	// リダイレクトの設定
+	location := fmt.Sprintf("%s?code=%s&state=%s", v.RedirectUri, authCodeString, v.State)
+	c.Redirect(http.StatusFound, location) // 302リダイレクト
+}
+
+// トークンエンドポイント
+func TokenHandler(c *gin.Context) {
+	// Cookieからセッションを取得
+	// cookie, err := c.Cookie("session")
+	// if err != nil {
+	// 	c.JSON(http.StatusBadRequest, gin.H{
+	// 		"error": "session not found",
+	// 	})
+	// 	return
+	// }
+
+	// 必須パラメータの確認
+	requiredParameters := []string{"grant_type", "code", "client_id", "redirect_uri"}
+	for _, param := range requiredParameters {
+		if c.PostForm(param) == "" {
+			c.JSON(http.StatusBadRequest, gin.H{
+				"error": fmt.Sprintf("invalid_request. %s is missing", param),
+			})
+			return
+		}
+	}
+
+	// グラントタイプの確認
+	if c.PostForm("grant_type") != "authorization_code" {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "invalid_request. not support type",
+		})
+		return
+	}
+
+	// 認可コードの取得と確認
+	authCode, exists := model.AuthCodeList[c.PostForm("code")]
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "invalid_request. authorization code not found",
+		})
+		return
+	}
+
+	// クライアントIDとリダイレクトURIのチェック
+	clientID := c.PostForm("client_id")
+	if authCode.ClientId != clientID {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "invalid_request. client_id does not match",
+		})
+		return
+	}
+
+	redirectURI := c.PostForm("redirect_uri")
+	if authCode.RedirectUri != redirectURI {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "invalid_request. redirect_uri does not match",
+		})
+		return
+	}
+
+	// 認可コードの有効期限確認
+	if authCode.ExpiresAt < time.Now().Unix() {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "invalid_request. auth code has expired",
+		})
+		return
+	}
+
+	// // PKCEの確認
+	// session, exists := model.SessionList[cookie]
+	// if !exists {
+	// 	c.JSON(http.StatusBadRequest, gin.H{
+	// 		"error": "session not found",
+	// 	})
+	// 	return
+	// }
+
+	// codeVerifier := c.PostForm("code_verifier")
+	// expectedChallenge := base64URLEncode(codeVerifier)
+
+	// if session.CodeChallenge != expectedChallenge {
+	// 	c.JSON(http.StatusBadRequest, gin.H{
+	// 		"error": "invalid_request. PKCE check failed",
+	// 	})
+	// 	return
+	// }
+
+	// アクセストークンの発行
+	tokenString := uuid.New().String()
+	expireTime := time.Now().Unix() + 3600 // 1時間後に有効期限が切れる
+
+	tokenInfo := model.TokenCode{
+		User:      authCode.User,
+		ClientId:  authCode.ClientId,
+		Scopes:    authCode.Scopes,
+		ExpiresAt: expireTime,
+	}
+
+	model.TokenCodeList[tokenString] = tokenInfo
+
+	// 認可コードを削除
+	delete(model.AuthCodeList, c.PostForm("code"))
+
+	// レスポンスの生成
+	tokenResponse := model.TokenResponse{
+		AccessToken: tokenString,
+		TokenType:   "Bearer",
+		ExpiresIn:   expireTime,
+	}
+
+	resp, err := json.Marshal(tokenResponse)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"error": "internal error",
+		})
+		return
+	}
+
+	// 正常なレスポンスを返す
+	c.Writer.Header().Set("Content-Type", "application/json")
+	c.Writer.WriteHeader(http.StatusOK)
+	c.Writer.Write(resp) // JSONオブジェクトを直接レスポンスとして書き込む
+}
+
+// Base64 URLエンコード
+func base64URLEncode(verifier string) string {
+	hash := sha256.Sum256([]byte(verifier))
+	return base64.RawURLEncoding.EncodeToString(hash[:])
 }
