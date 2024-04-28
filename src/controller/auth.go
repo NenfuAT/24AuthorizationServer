@@ -59,6 +59,15 @@ func Auth(c *gin.Context) {
 	}
 	model.SessionList[sessionId] = session
 
+	// scopeの確認、OAuthかOIDCか
+	// 組み合わせへの対応は面倒なので "openid profile" で固定
+	if query.Get("scope") == "openid profile" {
+		session.Oidc = true
+	} else {
+		session.CodeChallenge = query.Get("code_challenge")
+		session.CodeChallengeMethod = query.Get("code_challenge_method")
+	}
+
 	// セッションIDをCookieにセット
 	cookie := &http.Cookie{
 		Name:  "session",
@@ -133,14 +142,14 @@ func AuthCheck(c *gin.Context) {
 
 // トークンエンドポイント
 func TokenHandler(c *gin.Context) {
-	// Cookieからセッションを取得
-	// cookie, err := c.Cookie("session")
-	// if err != nil {
-	// 	c.JSON(http.StatusBadRequest, gin.H{
-	// 		"error": "session not found",
-	// 	})
-	// 	return
-	// }
+	//Cookieからセッションを取得
+	cookie, err := c.Cookie("session")
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "session not found",
+		})
+		return
+	}
 
 	// 必須パラメータの確認
 	requiredParameters := []string{"grant_type", "code", "client_id", "redirect_uri"}
@@ -195,24 +204,24 @@ func TokenHandler(c *gin.Context) {
 		return
 	}
 
-	// // PKCEの確認
-	// session, exists := model.SessionList[cookie]
-	// if !exists {
-	// 	c.JSON(http.StatusBadRequest, gin.H{
-	// 		"error": "session not found",
-	// 	})
-	// 	return
-	// }
+	// PKCEの確認
+	session, exists := model.SessionList[cookie]
+	if !exists {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "session not found",
+		})
+		return
+	}
 
-	// codeVerifier := c.PostForm("code_verifier")
-	// expectedChallenge := base64URLEncode(codeVerifier)
+	codeVerifier := c.PostForm("code_verifier")
+	expectedChallenge := base64URLEncode(codeVerifier)
 
-	// if session.CodeChallenge != expectedChallenge {
-	// 	c.JSON(http.StatusBadRequest, gin.H{
-	// 		"error": "invalid_request. PKCE check failed",
-	// 	})
-	// 	return
-	// }
+	if session.CodeChallenge != expectedChallenge {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "invalid_request. PKCE check failed",
+		})
+		return
+	}
 
 	// アクセストークンの発行
 	tokenString := uuid.New().String()
@@ -235,6 +244,10 @@ func TokenHandler(c *gin.Context) {
 		AccessToken: tokenString,
 		TokenType:   "Bearer",
 		ExpiresIn:   expireTime,
+	}
+
+	if session.Oidc {
+		tokenResponse.IdToken, _ = util.makeJWT()
 	}
 
 	resp, err := json.Marshal(tokenResponse)
