@@ -3,6 +3,5 @@
 #db
 docker/mysql/data/
 #
-src/conf/environments/
-src/log
-src/key
+src/backend/log
+src/backend/key

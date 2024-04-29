@@ -24,7 +24,7 @@ services:
       context: .
       dockerfile: ./docker/go/Dockerfile
     volumes:
-      - ./src:/go/src/app
+      - ./src/backend:/go/src/app
     ports:
       - 8084:8084
     depends_on:
