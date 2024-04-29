@@ -30,11 +30,16 @@ func Init() {
 		c.String(http.StatusOK, "Hello World!!")
 	})
 
+	//認可フロー用
 	r.GET("/auth", controller.Auth)
 	r.POST("/authcheck", controller.AuthCheck)
 	r.POST("/token", controller.TokenHandler)
 	r.GET("/userinfo", controller.UserinfoHandler)
 	r.GET("/certs", controller.Certs)
+
+	//ユーザ関係
+	r.POST("/user/create")
+
 	// サーバの起動とエラーハンドリング
 	if err := r.Run("0.0.0.0:8084"); err != nil {
 		fmt.Println("サーバの起動に失敗しました:", err)
