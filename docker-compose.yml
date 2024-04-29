@@ -1,8 +1,25 @@
 services: 
+
+  mysql:
+    container_name: ${MYSQL_CONTAINER_HOST}
+    image: mysql:latest
+    restart: always
+    ports:
+      - "3306:3306" 
+    volumes:
+      - ./docker/mysql/init:/docker-entrypoint-initdb.d 
+      - ./docker/mysql/data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD}  
+      MYSQL_DATABASE: ${MYSQL_DATABASE}  
+      MYSQL_USER: ${MYSQL_USER}  
+      MYSQL_PASSWORD: ${MYSQL_PASSWORD}  
+      
   golang:
     container_name: ${AUTHORIZATION_CONTAINER_HOST}
     hostname: ${AUTHORIZATION_HOST}
     tty: true
+    env_file: .env
     build:
       context: .
       dockerfile: ./docker/go/Dockerfile
@@ -10,3 +27,5 @@ services:
       - ./src:/go/src/app
     ports:
       - 8084:8084
+    depends_on:
+      - "mysql"

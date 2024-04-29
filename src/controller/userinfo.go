@@ -58,8 +58,8 @@ func UserinfoHandler(c *gin.Context) {
 
 	// ユーザー情報を返す
 	userInfo := map[string]interface{}{
-		"sub":         model.TestUser.Sub,
-		"name":        model.TestUser.Name,
+		"sub":         model.TestUser.ID,
+		"email":       model.TestUser.Email,
 		"given_name":  model.TestUser.GivenName,
 		"family_name": model.TestUser.FamilyName,
 		"locale":      model.TestUser.Locale,
