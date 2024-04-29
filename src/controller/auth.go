@@ -97,10 +97,10 @@ func Auth(c *gin.Context) {
 
 // Ginによるログイン認証
 func AuthCheck(c *gin.Context) {
-	loginUser := c.PostForm("username")
+	loginUser := c.PostForm("email")
 	password := c.PostForm("password")
 
-	if loginUser != model.TestUser.Name || password != model.TestUser.Password {
+	if loginUser != model.TestUser.Email || password != model.TestUser.Password {
 		c.String(http.StatusBadRequest, "login failed")
 		return
 	}

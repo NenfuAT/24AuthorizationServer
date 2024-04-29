@@ -1,7 +1,7 @@
 #環境変数
 .env
 #db
-docker/postgres/data/
+docker/mysql/data/
 #
 src/conf/environments/
 src/log
