@@ -18,8 +18,8 @@ import (
 )
 
 // 秘密鍵を読み込む
-func readPrivateKey() (*rsa.PrivateKey, error) {
-	data, err := os.ReadFile("private-key.pem")
+func ReadPrivateKey() (*rsa.PrivateKey, error) {
+	data, err := os.ReadFile("/go/src/app/key/private-key.pem")
 	if err != nil {
 		return nil, err
 	}
@@ -27,18 +27,25 @@ func readPrivateKey() (*rsa.PrivateKey, error) {
 	if keyblock == nil {
 		return nil, fmt.Errorf("invalid private key data")
 	}
-	if keyblock.Type != "RSA PRIVATE KEY" {
+	if keyblock.Type != "PRIVATE KEY" {
 		return nil, fmt.Errorf("invalid private key type : %s", keyblock.Type)
 	}
-	privateKey, err := x509.ParsePKCS1PrivateKey(keyblock.Bytes)
+	// PKCS#8形式として秘密鍵を解析
+	privateKey, err := x509.ParsePKCS8PrivateKey(keyblock.Bytes)
 	if err != nil {
 		return nil, err
 	}
-	return privateKey, nil
+
+	// RSA秘密鍵かどうかを確認
+	rsaPrivateKey, ok := privateKey.(*rsa.PrivateKey)
+	if !ok {
+		return nil, fmt.Errorf("not an RSA private key")
+	}
+	return rsaPrivateKey, nil
 }
 
 // "ヘッダー.ペイロード"を作成する
-func makeHeaderPayload() string {
+func MakeHeaderPayload() (string, error) {
 	// ヘッダー
 	var header = []byte(`{"alg":"RS256","kid": "12345678","typ":"JWT"}`)
 
@@ -57,20 +64,25 @@ func makeHeaderPayload() string {
 		Iat:        time.Now().Unix(),
 		Exp:        time.Now().Unix() + model.ACCESS_TOKEN_DURATION,
 	}
-	payload_json, _ := json.Marshal(payload)
+	payload_json, err := json.Marshal(payload)
+	if err != nil {
+		return "", err
+	}
 
 	//base64エンコード
 	b64header := base64.RawURLEncoding.EncodeToString(header)
 	b64payload := base64.RawURLEncoding.EncodeToString(payload_json)
 
-	return fmt.Sprintf("%s.%s", b64header, b64payload)
+	return fmt.Sprintf("%s.%s", b64header, b64payload), nil
 }
 
 // JWTを作成
-func makeJWT() (string, error) {
-	jwtString := makeHeaderPayload()
-
-	privateKey, err := readPrivateKey()
+func MakeJWT() (string, error) {
+	jwtString, err := MakeHeaderPayload()
+	if err != nil {
+		return "", err
+	}
+	privateKey, err := ReadPrivateKey()
 	if err != nil {
 		return "", err
 	}
@@ -94,9 +106,15 @@ func makeJWT() (string, error) {
 }
 
 // 　JWKを作成してJSONにして返す
-func makeJWK() []byte {
+func MakeJWK() []byte {
 
-	data, _ := os.ReadFile("public-key.pem")
+	data, err := os.ReadFile("/go/src/app/key/public-key.pem")
+	if err != nil {
+		// ファイルが読み込めない場合、エラーメッセージを返す
+		fmt.Println("failed to parse JWK from PEM data: %w", err)
+		return nil
+	}
+	println(data)
 	keyset, _ := jwk.ParseKey(data, jwk.WithPEM(true))
 
 	keyset.Set(jwk.KeyIDKey, "12345678")
