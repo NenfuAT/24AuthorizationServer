@@ -10,6 +10,7 @@ import (
 	"time"
 
 	"github.com/NenfuAT/24AuthorizationServer/model"
+	"github.com/NenfuAT/24AuthorizationServer/util"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -56,9 +57,8 @@ func Auth(c *gin.Context) {
 		RedirectUri:         query.Get("redirect_uri"),
 		CodeChallenge:       query.Get("code_challenge"),
 		CodeChallengeMethod: query.Get("code_challenge_method"),
+		Oidc:                true,
 	}
-	model.SessionList[sessionId] = session
-
 	// scopeの確認、OAuthかOIDCか
 	// 組み合わせへの対応は面倒なので "openid profile" で固定
 	if query.Get("scope") == "openid profile" {
@@ -67,7 +67,7 @@ func Auth(c *gin.Context) {
 		session.CodeChallenge = query.Get("code_challenge")
 		session.CodeChallengeMethod = query.Get("code_challenge_method")
 	}
-
+	model.SessionList[sessionId] = session
 	// セッションIDをCookieにセット
 	cookie := &http.Cookie{
 		Name:  "session",
@@ -247,7 +247,13 @@ func TokenHandler(c *gin.Context) {
 	}
 
 	if session.Oidc {
-		tokenResponse.IdToken, _ = util.makeJWT()
+		tokenResponse.IdToken, err = util.MakeJWT()
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"error": err.Error(),
+			})
+			return
+		}
 	}
 
 	resp, err := json.Marshal(tokenResponse)
