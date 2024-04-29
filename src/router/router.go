@@ -38,7 +38,7 @@ func Init() {
 	r.GET("/certs", controller.Certs)
 
 	//ユーザ関係
-	r.POST("/user/create")
+	r.POST("/user/create", controller.PostUser)
 
 	// サーバの起動とエラーハンドリング
 	if err := r.Run("0.0.0.0:8084"); err != nil {

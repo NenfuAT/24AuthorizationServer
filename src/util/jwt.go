@@ -45,10 +45,11 @@ func ReadPrivateKey() (*rsa.PrivateKey, error) {
 }
 
 // "ヘッダー.ペイロード"を作成する
-func MakeHeaderPayload() (string, error) {
+func MakeHeaderPayload(email string) (string, error) {
 	// ヘッダー
 	var header = []byte(`{"alg":"RS256","kid": "12345678","typ":"JWT"}`)
 
+	user := model.GetUserByEmail(email)
 	// ペイロード
 	var payload = model.Payload{
 		Iss:        "https://oreore.oidc.com",
@@ -57,10 +58,10 @@ func MakeHeaderPayload() (string, error) {
 		Sub:        model.TestUser.ID,
 		AtHash:     "PRzSZsEPQVqzY8xyB2ls5A",
 		Nonce:      "abc",
-		Name:       model.TestUser.NameJa,
-		GivenName:  model.TestUser.GivenName,
-		FamilyName: model.TestUser.FamilyName,
-		Locale:     model.TestUser.Locale,
+		Name:       user.NameJa,
+		GivenName:  user.GivenName,
+		FamilyName: user.FamilyName,
+		Locale:     user.Locale,
 		Iat:        time.Now().Unix(),
 		Exp:        time.Now().Unix() + model.ACCESS_TOKEN_DURATION,
 	}
@@ -77,8 +78,8 @@ func MakeHeaderPayload() (string, error) {
 }
 
 // JWTを作成
-func MakeJWT() (string, error) {
-	jwtString, err := MakeHeaderPayload()
+func MakeJWT(email string) (string, error) {
+	jwtString, err := MakeHeaderPayload(email)
 	if err != nil {
 		return "", err
 	}

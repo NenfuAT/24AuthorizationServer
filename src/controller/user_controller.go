@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/NenfuAT/24AuthorizationServer/model"
+	"github.com/NenfuAT/24AuthorizationServer/service"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )

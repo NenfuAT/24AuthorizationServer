@@ -57,7 +57,6 @@ func Auth(c *gin.Context) {
 		RedirectUri:         query.Get("redirect_uri"),
 		CodeChallenge:       query.Get("code_challenge"),
 		CodeChallengeMethod: query.Get("code_challenge_method"),
-		Oidc:                true,
 	}
 	// scopeの確認、OAuthかOIDCか
 	// 組み合わせへの対応は面倒なので "openid profile" で固定
@@ -100,8 +99,11 @@ func AuthCheck(c *gin.Context) {
 	loginUser := c.PostForm("email")
 	password := c.PostForm("password")
 
-	if loginUser != model.TestUser.Email || password != model.TestUser.Password {
-		c.String(http.StatusBadRequest, "login failed")
+	user, err := model.GetUserByEmailAndPassword(loginUser, password)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{
+			"error": "login failed",
+		})
 		return
 	}
 
@@ -124,7 +126,7 @@ func AuthCheck(c *gin.Context) {
 	// 認可コードの生成と保存
 	authCodeString := uuid.New().String()
 	authData := model.AuthCode{
-		User:        loginUser,
+		User:        user.Email,
 		ClientId:    v.Client,
 		Scopes:      v.Scopes,
 		RedirectUri: v.RedirectUri,
@@ -247,7 +249,7 @@ func TokenHandler(c *gin.Context) {
 	}
 
 	if session.Oidc {
-		tokenResponse.IdToken, err = util.MakeJWT()
+		tokenResponse.IdToken, err = util.MakeJWT(authCode.User)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{
 				"error": err.Error(),

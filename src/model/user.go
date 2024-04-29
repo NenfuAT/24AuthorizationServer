@@ -1,13 +1,13 @@
 package model
 
 type User struct {
-	ID         string
-	Email      string
-	Password   string
-	NameJa     string
-	GivenName  string
-	FamilyName string
-	Locale     string
+	ID         string `json:"id"`
+	Email      string `json:"email"`
+	Password   string `json:"password"`
+	NameJa     string `json:"name_ja"`
+	GivenName  string `json:"given_name"`
+	FamilyName string `json:"family_name"`
+	Locale     string `json:"locale"`
 }
 
 func InsertUser(u User) error {
@@ -19,11 +19,21 @@ func InsertUser(u User) error {
 
 func GetUserByEmail(email string) User {
 	var user User
-	result := db.Where("email = ? ", email).First(&user)
-	if result.Error != nil {
+	if err := db.
+		Where("email = ?", email).
+		Find(&user).Error; err != nil {
 		return User{}
 	}
 	return user
+}
+
+func GetUserByEmailAndPassword(email, password string) (User, error) {
+	var user User
+	result := db.Where("email = ? AND password = ?", email, password).First(&user)
+	if result.Error != nil {
+		return User{}, result.Error
+	}
+	return user, nil
 }
 
 var TestUser = User{
