@@ -75,21 +75,24 @@ func Auth(c *gin.Context) {
 	}
 	http.SetCookie(c.Writer, cookie)
 
-	// ログイン&権限認可の画面を表示
-	err := model.Templates["login"].Execute(c.Writer, struct {
-		ClientId string
-		Scope    string
-	}{
-		ClientId: session.Client,
-		Scope:    session.Scopes,
-	})
-	if err != nil {
-		log.Println("Error rendering login template:", err)
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"error": "internal error",
-		})
-		return
-	}
+	// // ログイン&権限認可の画面を表示
+	// err := model.Templates["login"].Execute(c.Writer, struct {
+	// 	ClientId string
+	// 	Scope    string
+	// }{
+	// 	ClientId: session.Client,
+	// 	Scope:    session.Scopes,
+	// })
+	// if err != nil {
+	// 	log.Println("Error rendering login template:", err)
+	// 	c.JSON(http.StatusInternalServerError, gin.H{
+	// 		"error": "internal error",
+	// 	})
+	// 	return
+	// }
+	// リダイレクトを実行
+	// ローカルホストのポート3000/signinにリダイレクト
+	c.Redirect(http.StatusFound, "http://localhost:3000/signin")
 
 	log.Println("Returned login page...")
 }
@@ -99,6 +102,7 @@ func AuthCheck(c *gin.Context) {
 	loginUser := c.PostForm("email")
 	password := c.PostForm("password")
 
+	println(loginUser, password)
 	user, err := model.GetUserByEmailAndPassword(loginUser, password)
 	if err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{
@@ -112,6 +116,7 @@ func AuthCheck(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "authsession not found",
 		})
+		fmt.Println("Error:authsession not found")
 		return
 	}
 
@@ -120,6 +125,7 @@ func AuthCheck(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{
 			"error": "invalid session",
 		})
+		fmt.Println("Error:invalid session")
 		return
 	}
 
@@ -139,7 +145,9 @@ func AuthCheck(c *gin.Context) {
 
 	// リダイレクトの設定
 	location := fmt.Sprintf("%s?code=%s&state=%s", v.RedirectUri, authCodeString, v.State)
-	c.Redirect(http.StatusFound, location) // 302リダイレクト
+	c.JSON(http.StatusOK, gin.H{
+		"redirect": location,
+	})
 }
 
 // トークンエンドポイント

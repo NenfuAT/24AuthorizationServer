@@ -1,0 +1,20 @@
+[GIN-debug] [WARNING] Creating an Engine instance with the Logger and Recovery middleware already attached.
+
+[GIN-debug] [WARNING] Running in "debug" mode. Switch to "release" mode in production.
+ - using env:	export GIN_MODE=release
+ - using code:	gin.SetMode(gin.ReleaseMode)
+
+[GIN-debug] GET    /hello                    --> github.com/NenfuAT/24AuthorizationServer/router.Init.func1 (4 handlers)
+[GIN-debug] GET    /auth                     --> github.com/NenfuAT/24AuthorizationServer/controller.Auth (4 handlers)
+[GIN-debug] POST   /authcheck                --> github.com/NenfuAT/24AuthorizationServer/controller.AuthCheck (4 handlers)
+[GIN-debug] POST   /token                    --> github.com/NenfuAT/24AuthorizationServer/controller.TokenHandler (4 handlers)
+[GIN-debug] GET    /userinfo                 --> github.com/NenfuAT/24AuthorizationServer/controller.UserinfoHandler (4 handlers)
+[GIN-debug] GET    /certs                    --> github.com/NenfuAT/24AuthorizationServer/controller.Certs (4 handlers)
+[GIN-debug] POST   /user/create              --> github.com/NenfuAT/24AuthorizationServer/controller.PostUser (4 handlers)
+[GIN-debug] [WARNING] You trusted all proxies, this is NOT safe. We recommend you to set a value.
+Please check https://pkg.go.dev/github.com/gin-gonic/gin#readme-don-t-trust-all-proxies for details.
+[GIN-debug] Listening and serving HTTP on 0.0.0.0:8084
+[GIN] 2024/05/01 - 04:57:11 | 302 |       265.5µs |      172.18.0.1 | GET      "/auth?response_type=code&client_id=1234&state=akusrgxk96&scope=openid%20profile&redirect_uri=https%3A%2F%2Foauth.pstmn.io%2Fv1%2Fcallback&code_challenge=_Lh5eB9ylnOtQTa8wui0UBlgKPFitGkFPajswY9_FzA&code_challenge_method=S256"
+[GIN] 2024/05/01 - 04:58:54 | 302 |     388.958µs |      172.18.0.1 | GET      "/auth?response_type=code&client_id=1234&state=akusrgxk96&scope=openid%20profile&redirect_uri=https%3A%2F%2Foauth.pstmn.io%2Fv1%2Fcallback&code_challenge=DUKc4fY6CDsa9oMkhmgNL55GK6qLKOWbbiWXKusmezc&code_challenge_method=S256"
+[GIN] 2024/05/01 - 04:59:08 | 200 |   32.341375ms |      172.18.0.1 | POST     "/authcheck"
+[GIN] 2024/05/01 - 04:59:10 | 200 |    7.337292ms |      172.18.0.1 | POST     "/token"
