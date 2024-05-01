@@ -16,7 +16,7 @@ services:
       MYSQL_PASSWORD: ${MYSQL_PASSWORD}  
       
   golang:
-    container_name: ${AUTHORIZATION_CONTAINER_HOST}
+    container_name: ${AUTHORIZATION_BACK_CONTAINER_HOST}
     hostname: ${AUTHORIZATION_HOST}
     tty: true
     env_file: .env
@@ -24,7 +24,7 @@ services:
       context: .
       dockerfile: ./docker/go/Dockerfile
     volumes:
-      - ./src/backend:/go/src/app
+      - ./src:/go/src/app
     ports:
       - 8084:8084
     depends_on:
