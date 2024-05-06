@@ -3,5 +3,5 @@
 #db
 docker/mysql/data/
 #
-src/backend/log
-src/backend/key
+src/log/
+src/key/

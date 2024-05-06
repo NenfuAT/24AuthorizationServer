@@ -9,7 +9,7 @@ RUN apk upgrade --update && \
 WORKDIR /go/src/app/
 
 # ホストPCの[./src]フォルダーを[/go/src/app/]フォルダーにコピー
-ADD ./src/backend .
+ADD ./src .
 
 #CMD ["go", "run", "main.go"]
 

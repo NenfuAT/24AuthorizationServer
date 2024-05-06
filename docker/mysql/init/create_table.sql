@@ -12,5 +12,7 @@ CREATE TABLE IF NOT EXISTS users (
     name_ja VARCHAR(50),
     given_name VARCHAR(50),
     family_name VARCHAR(50),
-    locale VARCHAR(50)
+    locale VARCHAR(50),
+    gender TINYINT(1), 
+    birthday DATE
 );
