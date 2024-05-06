@@ -10,6 +10,13 @@ import (
 	"github.com/google/uuid"
 )
 
+func SearchEmail(c *gin.Context) {
+	email := c.PostForm("email")
+	println(email)
+	statusCode, result := service.CheckEmail(email)
+	c.JSON(statusCode, result)
+}
+
 func PostUser(c *gin.Context) {
 	var req model.User
 	if err := c.Bind(&req); err != nil {
@@ -34,5 +41,4 @@ func PostUser(c *gin.Context) {
 		// userが空の場合の処理
 		c.JSON(http.StatusInternalServerError, gin.H{"error": "Email address already in use"})
 	}
-
 }

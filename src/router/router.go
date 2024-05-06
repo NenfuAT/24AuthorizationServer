@@ -46,6 +46,7 @@ func Init() {
 	r.GET("/certs", controller.Certs)
 
 	//ユーザ関係
+	r.POST("/user/check", controller.SearchEmail)
 	r.POST("/user/create", controller.PostUser)
 
 	// サーバの起動とエラーハンドリング

@@ -55,7 +55,7 @@ func MakeHeaderPayload(email string) (string, error) {
 		Iss:        "https://oreore.oidc.com",
 		Azp:        model.ClientInfo.Id,
 		Aud:        model.ClientInfo.Id,
-		Sub:        model.TestUser.ID,
+		Sub:        user.ID,
 		AtHash:     "PRzSZsEPQVqzY8xyB2ls5A",
 		Nonce:      "abc",
 		Name:       user.NameJa,

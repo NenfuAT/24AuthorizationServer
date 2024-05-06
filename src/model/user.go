@@ -1,13 +1,17 @@
 package model
 
+import "time"
+
 type User struct {
-	ID         string `json:"id"`
-	Email      string `json:"email"`
-	Password   string `json:"password"`
-	NameJa     string `json:"name_ja"`
-	GivenName  string `json:"given_name"`
-	FamilyName string `json:"family_name"`
-	Locale     string `json:"locale"`
+	ID         string    `json:"id"`
+	Email      string    `json:"email"`
+	Password   string    `json:"password"`
+	NameJa     string    `json:"name_ja"`
+	GivenName  string    `json:"given_name"`
+	FamilyName string    `json:"family_name"`
+	Locale     string    `json:"locale"`
+	Gender     int       `json:"gender"`
+	Birthday   time.Time `json:"birthday"`
 }
 
 func InsertUser(u User) error {
