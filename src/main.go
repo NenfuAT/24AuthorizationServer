@@ -4,8 +4,8 @@ import (
 	"html/template"
 	"log"
 
-	"github.com/NenfuAT/24AuthorizationServer/model"
-	"github.com/NenfuAT/24AuthorizationServer/router"
+	"github.com/kajiLabTeam/mr-platform-authorization-server/model"
+	"github.com/kajiLabTeam/mr-platform-authorization-server/router"
 )
 
 func main() {

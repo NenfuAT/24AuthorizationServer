@@ -3,7 +3,7 @@ package service
 import (
 	"net/http"
 
-	"github.com/NenfuAT/24AuthorizationServer/model"
+	"github.com/kajiLabTeam/mr-platform-authorization-server/model"
 )
 
 func CreateUser(req model.User) (model.User, error) {

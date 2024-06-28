@@ -1,4 +1,4 @@
-module github.com/NenfuAT/24AuthorizationServer
+module github.com/kajiLabTeam/mr-platform-authorization-server
 
 go 1.20
 

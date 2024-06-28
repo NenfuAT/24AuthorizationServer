@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/NenfuAT/24AuthorizationServer/controller"
+	"github.com/kajiLabTeam/mr-platform-authorization-server/controller"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"

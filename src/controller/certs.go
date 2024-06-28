@@ -3,8 +3,8 @@ package controller
 import (
 	"net/http"
 
-	"github.com/NenfuAT/24AuthorizationServer/util"
 	"github.com/gin-gonic/gin"
+	"github.com/kajiLabTeam/mr-platform-authorization-server/util"
 )
 
 func Certs(c *gin.Context) {

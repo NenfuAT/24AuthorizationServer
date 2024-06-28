@@ -9,8 +9,8 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/NenfuAT/24AuthorizationServer/model"
-	"github.com/NenfuAT/24AuthorizationServer/util"
+	"github.com/kajiLabTeam/mr-platform-authorization-server/model"
+	"github.com/kajiLabTeam/mr-platform-authorization-server/util"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"

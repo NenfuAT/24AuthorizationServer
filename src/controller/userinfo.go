@@ -5,8 +5,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/NenfuAT/24AuthorizationServer/model"
 	"github.com/gin-gonic/gin"
+	"github.com/kajiLabTeam/mr-platform-authorization-server/model"
 )
 
 // ユーザー情報エンドポイント

@@ -13,7 +13,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/NenfuAT/24AuthorizationServer/model"
+	"github.com/kajiLabTeam/mr-platform-authorization-server/model"
 	"github.com/lestrrat-go/jwx/jwk"
 )
 
